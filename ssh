@@ -67,6 +67,7 @@ exitcode=$?
             rm -f `readlink "$symlink"` || true
             rm -f "$symlink"
         done
+        rm -f `readlink "${lockfile}.n"`
         rm -f "${lockfile}.n"
     else
         printf $n > "${lockfile}.n"
