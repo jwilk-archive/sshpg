@@ -39,7 +39,7 @@ lockfile="$HOME/.ssh/sshpg-lock"
     for gpg_key in ~/.ssh/*.gpg
     do
         symlink="${gpg_key%.gpg}"
-        if ! [ `stat -L -c '%s' "$symlink" 2>/dev/null || printf 0` -gt 0 ]
+        if ! [ -s "$symlink" ]
         then
             key=`mktemp /dev/shm/sshpg.XXXXXX`
             gpg --decrypt "$gpg_key" > "$key"
