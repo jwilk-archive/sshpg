@@ -28,11 +28,11 @@ lockfile="$HOME/.ssh/sshpg-lock"
 (
     set -e
     flock -w 3 9
-    n=`cat "${lockfile}.n" 2>/dev/null` || true
+    n=$(cat "${lockfile}.n" 2>/dev/null) || true
     if [ -z "$n" ]
     then
         n=0
-        lockcounter=`mktemp /dev/shm/sshpg.XXXXXX`
+        lockcounter=$(mktemp /dev/shm/sshpg.XXXXXX)
         ln -sf "$lockcounter" "${lockfile}.n"
     fi
     printf $((n+1)) > "${lockfile}.n"
@@ -41,7 +41,7 @@ lockfile="$HOME/.ssh/sshpg-lock"
         symlink="${gpg_key%.gpg}"
         if ! [ -s "$symlink" ]
         then
-            key=`mktemp /dev/shm/sshpg.XXXXXX`
+            key=$(mktemp /dev/shm/sshpg.XXXXXX)
             gpg --decrypt "$gpg_key" > "$key"
             ln -sf "$key" "$symlink"
         fi
@@ -50,24 +50,24 @@ lockfile="$HOME/.ssh/sshpg-lock"
 
 [ $? -eq 0 ] || exit 1
 
-"`basename "$0"`" "$@"
+"$(basename "$0")" "$@"
 
 exitcode=$?
 
 (
     set -e
     flock -w 3 9
-    n=`cat "${lockfile}.n" 2>/dev/null`
+    n=$(cat "${lockfile}.n" 2>/dev/null)
     n=$((n-1))
     if [ $n -le 0 ]
     then
         for gpg_key in ~/.ssh/*.gpg
         do
             symlink="${gpg_key%.gpg}"
-            rm -f `readlink "$symlink"` || true
+            rm -f $(readlink "$symlink") || true
             rm -f "$symlink"
         done
-        rm -f `readlink "${lockfile}.n"`
+        rm -f $(readlink "${lockfile}.n")
         rm -f "${lockfile}.n"
     else
         printf $n > "${lockfile}.n"
