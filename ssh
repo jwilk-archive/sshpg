@@ -23,6 +23,9 @@
 
 export PATH=/bin:/usr/bin/
 
+# subversion sends SIGTERM to ssh. WTH?!
+trap '' TERM
+
 lockfile="$HOME/.ssh/sshpg-lock"
 
 (
