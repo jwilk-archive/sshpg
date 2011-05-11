@@ -26,6 +26,13 @@ export PATH=/bin:/usr/bin/
 # subversion sends SIGTERM to ssh. WTH?!
 trap '' TERM
 
+if [ -d /run/shm/ ]
+then
+    shm=/run/shm
+else
+    shm=/dev/shm
+fi
+
 lockfile="$HOME/.ssh/sshpg-lock"
 
 (
@@ -35,7 +42,7 @@ lockfile="$HOME/.ssh/sshpg-lock"
     if [ -z "$n" ]
     then
         n=0
-        lockcounter=$(mktemp /dev/shm/sshpg.XXXXXX)
+        lockcounter=$(mktemp $shm/sshpg.XXXXXX)
         ln -sf "$lockcounter" "${lockfile}.n"
     fi
     printf $((n+1)) > "${lockfile}.n"
@@ -44,7 +51,7 @@ lockfile="$HOME/.ssh/sshpg-lock"
         symlink="${gpg_key%.gpg}"
         if ! [ -s "$symlink" ]
         then
-            key=$(mktemp /dev/shm/sshpg.XXXXXX)
+            key=$(mktemp $shm/sshpg.XXXXXX)
             gpg --decrypt "$gpg_key" > "$key"
             ln -sf "$key" "$symlink"
         fi
