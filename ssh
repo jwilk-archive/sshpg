@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright © 2010, 2011 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2010, 2011, 2013 Jakub Wilk <jwilk@jwilk.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -25,6 +25,13 @@ export PATH=/bin:/usr/bin/
 
 # subversion sends SIGTERM to ssh. WTH?!
 trap '' TERM
+
+# Shortcut: if the program is called without arguments, or with --help, don't
+# bother decrypting the keys.
+if [ $# -eq 0 ] || [ "$1" = '--help' ]
+then
+    exec "$(basename "$0")" "$@"
+fi
 
 if [ -d /run/shm/ ]
 then
