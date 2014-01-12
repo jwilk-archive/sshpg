@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright © 2010, 2011, 2013 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2010, 2011, 2013, 2014 Jakub Wilk <jwilk@jwilk.net>
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -42,23 +42,42 @@ fi
 
 lockfile="$HOME/.ssh/sshpg-lock"
 
+tmpdir=$(readlink ~/.ssh/sshpg-tmp)
+if [ -n "$tmpdir" ]
+then
+    stat=$(stat -c '%u %a %F' "$tmpdir" 2>/dev/null)
+    uid=$(id -u) || exit 1
+    [ "$stat" = "$uid 700 directory" ] || tmpdir=''
+fi
+if [ -z "$tmpdir" ]
+then
+    tmpdir=$(mktemp -d $shm/sshpg.XXXXXX) || exit 1
+    ln -sfT $tmpdir ~/.ssh/sshpg-tmp
+fi
+
+for gpg_key in ~/.ssh/*.gpg
+do
+    symlink="${gpg_key%.gpg}"
+    if [ -L "$symlink" ]
+    then
+        target=$(readlink "$symlink")
+        [ -n "${target##${tmpdir}/*}" ] || continue
+        rm -f "$symlink"
+    fi
+done
+
 (
     set -e
     flock -w 3 9
-    n=$(cat "${lockfile}.n" 2>/dev/null) || true
-    if [ -z "$n" ]
-    then
-        n=0
-        lockcounter=$(mktemp $shm/sshpg.XXXXXX)
-        ln -sf "$lockcounter" "${lockfile}.n"
-    fi
-    printf $((n+1)) > "${lockfile}.n"
+    n=$(cat $tmpdir/counter 2>/dev/null) || true
+    [ -n "$n" ] || n=0
+    printf $((n+1)) > $tmpdir/counter
     for gpg_key in ~/.ssh/*.gpg
     do
         symlink="${gpg_key%.gpg}"
         if ! [ -s "$symlink" ]
         then
-            key=$(mktemp $shm/sshpg.XXXXXX)
+            key=$(mktemp $tmpdir/key.XXXXXX)
             gpg --decrypt "$gpg_key" > "$key"
             ln -sf "$key" "$symlink"
         fi
@@ -74,7 +93,7 @@ exitcode=$?
 (
     set -e
     flock -w 3 9
-    n=$(cat "${lockfile}.n" 2>/dev/null)
+    n=$(cat $tmpdir/counter 2>/dev/null)
     n=$((n-1))
     if [ $n -le 0 ]
     then
@@ -84,10 +103,9 @@ exitcode=$?
             rm -f $(readlink "$symlink") || true
             rm -f "$symlink"
         done
-        rm -f $(readlink "${lockfile}.n")
-        rm -f "${lockfile}.n"
+        rm -f $tmpdir/counter
     else
-        printf $n > "${lockfile}.n"
+        printf $n > $tmpdir/counter
     fi
 ) 9> "$lockfile"
 
