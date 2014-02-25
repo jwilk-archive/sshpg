@@ -33,11 +33,14 @@ then
     exec "$(basename "$0")" "$@"
 fi
 
-if [ -d /run/shm/ ]
+if df -t tmpfs /tmp >/dev/null 2>&1
 then
-    shm=/run/shm
+    tmproot=/tmp
+elif [ -d /run/shm/ ]
+then
+    tmproot=/run/shm
 else
-    shm=/dev/shm
+    tmproot=/dev/shm
 fi
 
 lockfile="$HOME/.ssh/sshpg-lock"
@@ -51,7 +54,7 @@ then
 fi
 if [ -z "$tmpdir" ]
 then
-    tmpdir=$(mktemp -d $shm/sshpg.XXXXXX) || exit 1
+    tmpdir=$(mktemp -d "$tmproot/sshpg.XXXXXX") || exit 1
     ln -sfT $tmpdir ~/.ssh/sshpg-tmp
 fi
 
