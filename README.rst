@@ -1,0 +1,14 @@
+Keep your SSH keys GPG-encrypted!
+
+This repository provides ``ssh`` (and ``scp``, and ``sftp``, and ``slogin``)
+wrapper scripts that will decrypt them on demand.
+
+.. note::
+   This software is no longer developed.
+   Consider using sshpg2_,
+   which is a much simpler solution based on ssh-agent.
+
+.. _sshpg2:
+   https://github.com/jwilk/sshpg2
+
+.. vim:tw=72 ts=3 sts=3 sw=3 et
