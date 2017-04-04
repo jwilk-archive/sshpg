@@ -11,4 +11,4 @@ wrapper scripts that will decrypt them on demand.
 .. _sshpg2:
    https://github.com/jwilk/sshpg2
 
-.. vim:tw=72 ts=3 sts=3 sw=3 et
+.. vim:tw=72 ts=3 sts=3 sw=3 et ft=rst
